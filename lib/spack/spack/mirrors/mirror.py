@@ -5,7 +5,7 @@ import collections.abc
 import operator
 import os
 import urllib.parse
-from typing import Any, Dict, Optional, Tuple, Union
+from typing import Any, Dict, List, Optional, Tuple, Union
 
 import llnl.util.tty as tty
 
@@ -99,6 +99,11 @@ class Mirror:
         binary = "b" if self.binary else " "
         print(f"{self.name: <{max_len}} [{source}{binary}] {url}")
 
+    def _process_spec_filters(self, key: str) -> List[str]:
+        if isinstance(self._data, str):
+            return []
+        return self._data.get(key, [])
+
     @property
     def name(self):
         return self._name or "<unnamed>"
@@ -130,6 +135,14 @@ class Mirror:
     def push_url(self):
         """Get the valid, canonicalized fetch URL"""
         return self.get_url("push")
+
+    @property
+    def exclusions(self):
+        return self._process_spec_filters("exclude")
+
+    @property
+    def inclusions(self):
+        return self._process_spec_filters("include")
 
     def ensure_mirror_usable(self, direction: str = "push"):
         access_pair = self._get_value("access_pair", direction)

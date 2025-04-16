@@ -434,3 +434,14 @@ def test_mirror_name_or_url_dir_parsing(tmp_path):
     with working_dir(curdir):
         assert mirror_name_or_url(".").fetch_url == curdir.as_uri()
         assert mirror_name_or_url("..").fetch_url == tmp_path.as_uri()
+
+
+def test_mirror_parse_exclude_include():
+    mirror_raw = {
+        "url": "https://example.com",
+        "exclude": ["dev_path=*", "+shared"],
+        "include": ["+foo"],
+    }
+    m = spack.mirrors.mirror.Mirror(mirror_raw)
+    assert "dev_path=*" in m.exclusions
+    assert "+foo" in m.inclusions

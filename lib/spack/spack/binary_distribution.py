@@ -1230,6 +1230,8 @@ class OCIUploader(Uploader):
             force=self.force,
             tmpdir=self.tmpdir,
             executor=self.executor,
+            exclusions=self.mirror.exclusions,
+            inclusions=self.mirror.inclusions,
         )
 
         self._base_images = base_images
@@ -1280,6 +1282,8 @@ class URLUploader(Uploader):
             signing_key=self.signing_key,
             tmpdir=self.tmpdir,
             executor=self.executor,
+            exclusions=self.mirror.exclusions,
+            inclusions=self.mirror.inclusions,
         )
 
 
@@ -1342,6 +1346,34 @@ class FancyProgress:
         tty.info(f"{self.pre}Failed to push {self.pretty_spec}")
 
 
+def _filter_specs(specs: List[spack.spec.Spec], exclude: List[str], include: List[str]):
+    """
+    Determine the intersection of include/exclude filters
+    Tie goes to keeping
+
+    skip  | keep  | outcome
+    ------------------------
+    False | False | Keep
+    True  | True  | Keep
+    False | True  | Keep
+    True  | False | Skip
+    """
+    filter = []
+    filtrate = []
+    ex_specs = [spack.spec.Spec(spec) for spec in exclude]
+    ic_specs = [spack.spec.Spec(spec) for spec in include]
+    for spec in specs:
+        skip = any([spec.satisfies(test) for test in ex_specs])
+        keep = any([spec.satisfies(test) for test in ic_specs])
+
+        if skip and not keep:
+            filtrate.append(spec)
+        else:
+            filter.append(spec)
+
+    return filter, filtrate
+
+
 def _url_push(
     specs: List[spack.spec.Spec],
     out_url: str,
@@ -1350,6 +1382,8 @@ def _url_push(
     update_index: bool,
     tmpdir: str,
     executor: concurrent.futures.Executor,
+    exclusions: List[str] = [],
+    inclusions: List[str] = [],
 ) -> Tuple[List[spack.spec.Spec], List[Tuple[spack.spec.Spec, BaseException]]]:
     """Pushes to the provided build cache, and returns a list of skipped specs that were already
     present (when force=False), and a list of errors. Does not raise on error."""
@@ -1379,6 +1413,11 @@ def _url_push(
 
     if not specs_to_upload:
         return skipped, errors
+
+    filter, filtrate = _filter_specs(specs_to_upload, exclusions, inclusions)
+
+    skipped.extend(filtrate)
+    specs_to_upload = filter
 
     total = len(specs_to_upload)
 
@@ -1647,6 +1686,8 @@ def _oci_push(
     tmpdir: str,
     executor: concurrent.futures.Executor,
     force: bool = False,
+    exclusions: List[str] = [],
+    inclusions: List[str] = [],
 ) -> Tuple[
     List[spack.spec.Spec],
     Dict[str, Tuple[dict, dict]],
@@ -1682,6 +1723,11 @@ def _oci_push(
 
     if not blobs_to_upload:
         return skipped, base_images, checksums, []
+
+    filter, filtrate = _filter_specs(blobs_to_upload, exclusions, inclusions)
+
+    skipped.extend(filtrate)
+    blobs_to_upload = filter
 
     if len(blobs_to_upload) != len(installed_specs_with_deps):
         tty.info(
