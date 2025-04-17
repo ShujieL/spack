@@ -2301,7 +2301,7 @@ complete -c spack -n '__fish_spack_using_command mirror destroy' -l mirror-url -
 complete -c spack -n '__fish_spack_using_command mirror destroy' -l mirror-url -r -d 'find mirror to destroy by url'
 
 # spack mirror add
-set -g __fish_spack_optspecs_spack_mirror_add h/help scope= type= autopush unsigned signed exclude-file= exclude-specs= s3-access-key-id= s3-access-key-id-variable= s3-access-key-secret= s3-access-key-secret-variable= s3-access-token= s3-access-token-variable= s3-profile= s3-endpoint-url= oci-username= oci-username-variable= oci-password= oci-password-variable=
+set -g __fish_spack_optspecs_spack_mirror_add h/help scope= type= autopush unsigned signed include-file= include-specs= exclude-file= exclude-specs= s3-access-key-id= s3-access-key-id-variable= s3-access-key-secret= s3-access-key-secret-variable= s3-access-token= s3-access-token-variable= s3-profile= s3-endpoint-url= oci-username= oci-username-variable= oci-password= oci-password-variable=
 complete -c spack -n '__fish_spack_using_command_pos 0 mirror add' -f
 complete -c spack -n '__fish_spack_using_command mirror add' -s h -l help -f -a help
 complete -c spack -n '__fish_spack_using_command mirror add' -s h -l help -d 'show this help message and exit'
@@ -2315,6 +2315,10 @@ complete -c spack -n '__fish_spack_using_command mirror add' -l unsigned -f -a s
 complete -c spack -n '__fish_spack_using_command mirror add' -l unsigned -d 'do not require signing and signature verification when pushing and installing from this build cache'
 complete -c spack -n '__fish_spack_using_command mirror add' -l signed -f -a signed
 complete -c spack -n '__fish_spack_using_command mirror add' -l signed -d 'require signing and signature verification when pushing and installing from this build cache'
+complete -c spack -n '__fish_spack_using_command mirror add' -l include-file -r -f -a include_file
+complete -c spack -n '__fish_spack_using_command mirror add' -l include-file -r -d 'specs which Spack should always try to add to a mirror (listed in a file, one per line)'
+complete -c spack -n '__fish_spack_using_command mirror add' -l include-specs -r -f -a include_specs
+complete -c spack -n '__fish_spack_using_command mirror add' -l include-specs -r -d 'specs which Spack should always try to add to a mirror (specified on command line)'
 complete -c spack -n '__fish_spack_using_command mirror add' -l exclude-file -r -f -a exclude_file
 complete -c spack -n '__fish_spack_using_command mirror add' -l exclude-file -r -d 'specs which Spack should not try to add to a mirror (listed in a file, one per line)'
 complete -c spack -n '__fish_spack_using_command mirror add' -l exclude-specs -r -f -a exclude_specs
