@@ -18,6 +18,7 @@ import spack.mirrors.layout
 import spack.mirrors.mirror
 import spack.mirrors.utils
 import spack.patch
+import spack.spec
 import spack.stage
 import spack.util.executable
 import spack.util.spack_json as sjson
@@ -454,3 +455,33 @@ def test_mirror_parse_exclude_include():
     m = spack.mirrors.mirror.Mirror(mirror_raw)
     assert "dev_path=*" in m.exclusions
     assert "+foo" in m.inclusions
+
+
+INPUT_SPEC_STRS = ["foo@main", "foo@main dev_path=/tmp", "foo@2.1.3"]
+
+
+@pytest.mark.parametrize(
+    "include,exclude,gold",
+    [
+        ([], [], [0, 1, 2]),
+        (["dev_path=*", "@main"], [], [0, 1, 2]),
+        ([], ["dev_path=*", "@main"], [2]),
+        (["dev_path=*"], ["@main"], [1, 2]),
+    ],
+)
+def test_filter_specs(include, exclude, gold):
+    input_specs = [spack.spec.Spec(s) for s in INPUT_SPEC_STRS]
+    data = {"include": include, "exclude": exclude}
+    m = spack.mirrors.mirror.Mirror(data)
+    filter = spack.mirrors.utils.MirrorSpecFilter(m)
+
+    filtered, filtrate = filter(input_specs)
+
+    assert filtered is not None
+    assert filtrate is not None
+
+    # lossless
+    assert (set(filtered) | set(filtrate)) == set(input_specs)
+
+    for i in gold:
+        assert input_specs[i] in filtered

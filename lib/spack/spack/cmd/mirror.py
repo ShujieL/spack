@@ -378,7 +378,7 @@ def mirror_add(args):
     else:
         mirror = spack.mirrors.mirror.Mirror(args.url, name=args.name)
 
-    exclude_specs = mirror.to_dict().get("exclude", [])
+    exclude_specs = []
     if args.exclude_file:
         exclude_specs.extend(specs_from_text_file(args.exclude_file, concretize=False))
     if args.exclude_specs:

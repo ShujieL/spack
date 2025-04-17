@@ -59,32 +59,6 @@ buildcache_cmd = spack.main.SpackCommand("buildcache")
 legacy_mirror_dir = os.path.join(test_path, "data", "mirrors", "legacy_yaml")
 
 
-INPUT_SPEC_STRS = ["foo@main", "foo@main dev_path=/tmp", "foo@2.1.3"]
-
-
-@pytest.mark.parametrize(
-    "include,exclude,gold",
-    [
-        ([], [], [0, 1, 2]),
-        (["dev_path=*", "@main"], [], [0, 1, 2]),
-        ([], ["dev_path=*", "@main"], [2]),
-        (["dev_path=*"], ["@main"], [1, 2]),
-    ],
-)
-def test_filter_specs(include, exclude, gold):
-    input_specs = [spack.spec.Spec(s) for s in INPUT_SPEC_STRS]
-    filter, filtrate = bindist.filter_specs(input_specs, exclude, include)
-
-    assert filter is not None
-    assert filtrate is not None
-
-    # lossless
-    assert (set(filter) | set(filtrate)) == set(input_specs)
-
-    for i in gold:
-        assert input_specs[i] in filter
-
-
 @pytest.fixture(scope="function")
 def cache_directory(tmpdir):
     fetch_cache_dir = tmpdir.ensure("fetch_cache", dir=True)
