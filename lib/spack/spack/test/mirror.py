@@ -342,6 +342,15 @@ def test_update_4():
     assert m.fetch_url == "https://example.com"
 
 
+@pytest.mark.parametrize("filter", ["exclude", "include"])
+def test_update_filters(filter):
+    # Change push url, ensure minimal config
+    m = spack.mirrors.mirror.Mirror("https://example.com")
+    assert m.update({filter: ["foo", "bar"]})
+    assert m.to_dict() == {"url": "https://example.com", filter: ["foo", "bar"]}
+    assert m.fetch_url == "https://example.com"
+
+
 @pytest.mark.parametrize("direction", ["fetch", "push"])
 def test_update_connection_params(direction, tmpdir, monkeypatch):
     """Test whether new connection params expand the mirror config to a dict."""

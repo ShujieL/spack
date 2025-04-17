@@ -186,6 +186,32 @@ def test_buildcache_autopush(tmp_path, install_mockery, mock_fetch):
     assert (mirror_autopush_dir / "build_cache" / metadata_file).exists()
 
 
+def test_buildcache_exclude(tmp_path, install_mockery, mock_fetch):
+    """Test buildcache with autopush"""
+    mirror_dir = tmp_path / "mirror_a"
+
+    mirror(
+        "add",
+        "--autopush",
+        "--exclude-specs",
+        "libelf",
+        "--unsigned",
+        "mirror-autopush",
+        mirror_dir.as_uri(),
+    )
+
+    s = spack.concretize.concretize_one("libdwarf")
+
+    # Install and generate build cache index
+    PackageInstaller([s.package], fake=True, explicit=True).install()
+
+    missing_file = spack.binary_distribution.tarball_name(s["libelf"], ".spec.json")
+    found_file = spack.binary_distribution.tarball_name(s, ".spec.json")
+
+    assert (mirror_dir / "build_cache" / found_file).exists()
+    assert not (mirror_dir / "build_cache" / missing_file).exists()
+
+
 def test_buildcache_sync(
     mutable_mock_env_path, install_mockery, mock_packages, mock_fetch, mock_stage, tmpdir
 ):

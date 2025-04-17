@@ -134,6 +134,15 @@ def setup_parser(subparser):
         default=None,
         dest="signed",
     )
+    add_parser.add_argument(
+        "--exclude-file",
+        help="specs which Spack should not try to add to a mirror"
+        " (listed in a file, one per line)",
+    )
+    add_parser.add_argument(
+        "--exclude-specs",
+        help="specs which Spack should not try to add to a mirror (specified on command line)",
+    )
     arguments.add_connection_args(add_parser, False)
     # Remove
     remove_parser = sp.add_parser("remove", aliases=["rm"], help=mirror_remove.__doc__)
@@ -368,6 +377,16 @@ def mirror_add(args):
         mirror = spack.mirrors.mirror.Mirror(connection, name=args.name)
     else:
         mirror = spack.mirrors.mirror.Mirror(args.url, name=args.name)
+
+    exclude_specs = mirror.to_dict().get("exclude", [])
+    if args.exclude_file:
+        exclude_specs.extend(specs_from_text_file(args.exclude_file, concretize=False))
+    if args.exclude_specs:
+        exclude_specs.extend(spack.cmd.parse_specs(str(args.exclude_specs).split()))
+    if exclude_specs:
+        # round trip specs to assure they are valid
+        mirror.update({"exclude": [str(s) for s in exclude_specs]})
+
     spack.mirrors.utils.add(mirror, args.scope)
 
 
