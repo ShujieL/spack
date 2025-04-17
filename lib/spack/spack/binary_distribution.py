@@ -1346,7 +1346,7 @@ class FancyProgress:
         tty.info(f"{self.pre}Failed to push {self.pretty_spec}")
 
 
-def _filter_specs(specs: List[spack.spec.Spec], exclude: List[str], include: List[str]):
+def filter_specs(specs: List[spack.spec.Spec], exclude: List[str], include: List[str]):
     """
     Determine the intersection of include/exclude filters
     Tie goes to keeping
@@ -1414,7 +1414,7 @@ def _url_push(
     if not specs_to_upload:
         return skipped, errors
 
-    filter, filtrate = _filter_specs(specs_to_upload, exclusions, inclusions)
+    filter, filtrate = filter_specs(specs_to_upload, exclusions, inclusions)
 
     skipped.extend(filtrate)
     specs_to_upload = filter
@@ -1724,7 +1724,7 @@ def _oci_push(
     if not blobs_to_upload:
         return skipped, base_images, checksums, []
 
-    filter, filtrate = _filter_specs(blobs_to_upload, exclusions, inclusions)
+    filter, filtrate = filter_specs(blobs_to_upload, exclusions, inclusions)
 
     skipped.extend(filtrate)
     blobs_to_upload = filter
