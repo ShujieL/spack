@@ -63,7 +63,7 @@ import spack.util.url as url_util
 import spack.util.web as web_util
 from spack import traverse
 from spack.caches import misc_cache_location
-from spack.mirrors.utils import MirrorSpecFilter
+from spack.mirrors.filter import MirrorSpecFilter
 from spack.oci.image import (
     Digest,
     ImageReference,
